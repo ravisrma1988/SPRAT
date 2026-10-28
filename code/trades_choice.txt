@@ -1,0 +1,1 @@
+--w_max 6 --trades_detach 1

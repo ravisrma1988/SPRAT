@@ -1,0 +1,20 @@
+{
+  "best_clean": {
+    "epoch": 21,
+    "val_clean": 0.43936243653297424,
+    "val_pgd": 0.06722106784582138
+  },
+  "best_robust": {
+    "epoch": 28,
+    "val_pgd": 0.08593208342790604,
+    "val_clean": 0.4081774055957794
+  },
+  "final": {
+    "epoch": 30,
+    "val_clean": 0.4081774055957794,
+    "val_pgd": 0.07761607319116592
+  },
+  "primary_checkpoint": "best_robust.pth",
+  "total_train_s": 3579.6,
+  "total_val_s": 564.7
+}

@@ -1,0 +1,77 @@
+{
+  "torch": "2.7.0a0+7c8ec84dab.nv25.03",
+  "python": "3.12.3",
+  "cpu": "INTEL(R) XEON(R) PLATINUM 8570",
+  "cpu_affinity": 224,
+  "cpu_threads_for_latency": 4,
+  "gpu": "NVIDIA B200 MIG 1g.45gb",
+  "nvidia_smi_L": "GPU 0: NVIDIA B200 (UUID: GPU-296ad08b-3a9e-5717-bf28-c031c8142a81)\n  MIG 1g.45gb     Device  0: (UUID: MIG-cbdd0e06-d4af-5e53-8937-9cc34018e5c3)",
+  "cuda_visible_devices": null,
+  "gpu_processes_at_start": "[Insufficient Permissions], [Insufficient Permissions]",
+  "models": {
+    "mobilevit_s": {
+      "pretrained_tag": "timm/mobilevit_s.cvnets_in1k",
+      "input_mean": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "input_std": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "params_M": 4.949811,
+      "gflops": 3.041758976,
+      "gmacs": 1.520879488,
+      "cpu_b1": {
+        "median_ms": 25.264226831495762,
+        "p90_ms": 27.10877563804388
+      },
+      "gpu_b1": {
+        "median_ms": 3.69064137339592,
+        "p90_ms": 3.7524666637182236,
+        "peak_mem_MB": 42.79931640625,
+        "images_per_s": 270.9556141673707
+      },
+      "gpu_b32": {
+        "median_ms": 18.207806162536144,
+        "p90_ms": 18.21818593889475,
+        "peak_mem_MB": 529.35400390625,
+        "images_per_s": 1757.4879540316217
+      }
+    },
+    "efficientnet_b0": {
+      "pretrained_tag": "timm/efficientnet_b0.ra_in1k",
+      "input_mean": [
+        0.48500001430511475,
+        0.4560000002384186,
+        0.4059999883174896
+      ],
+      "input_std": [
+        0.2290000021457672,
+        0.2240000069141388,
+        0.22499999403953552
+      ],
+      "params_M": 4.031887,
+      "gflops": 0.769118144,
+      "gmacs": 0.384559072,
+      "cpu_b1": {
+        "median_ms": 14.02667909860611,
+        "p90_ms": 14.220613613724709
+      },
+      "gpu_b1": {
+        "median_ms": 2.550375647842884,
+        "p90_ms": 2.642909064888954,
+        "peak_mem_MB": 36.513671875,
+        "images_per_s": 392.09910149738266
+      },
+      "gpu_b32": {
+        "median_ms": 10.416303761303425,
+        "p90_ms": 10.422834008932114,
+        "peak_mem_MB": 427.9931640625,
+        "images_per_s": 3072.1070288752544
+      }
+    }
+  }
+}

@@ -1,0 +1,8 @@
+#phase	name	train_args
+smoke	clean	--mode clean
+smoke	naive_pgd	--mode pgd --w_max 0.5
+smoke	sprat_w1r1	--mode pgd --w_max 0.5 --warmup 1 --ramp 1
+smoke	trades_w1r1	--mode trades --w_max 6 --warmup 1 --ramp 1
+smoke	cat_r2	--mode pgd --w_max 0.5 --warmup 0 --ramp 2 --ramp_what steps
+smoke	madry_pgd	--mode pgd --w_max 1.0
+smoke	naive_pgd_effb0	--mode pgd --w_max 0.5 --backbone efficientnet_b0 --bn_mode joint

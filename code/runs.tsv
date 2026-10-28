@@ -1,0 +1,27 @@
+#phase	name	train_args
+# tune: TRADES baseline tuning on validation only (seed 42, no test evaluation); select_trades.py writes
+#       the chosen arguments to trades_choice.txt, which replaces @TRADES@ below. Not part of 'all'.
+tune	trades_tune_b1	--mode trades --w_max 1
+tune	trades_tune_b3	--mode trades --w_max 3
+tune	trades_tune_b6	--mode trades --w_max 6
+tune	trades_tune_b6det	--mode trades --w_max 6 --trades_detach 1
+pilot	naive_pgd	--mode pgd --w_max 0.5
+pilot	sprat_w10r10	--mode pgd --w_max 0.5 --warmup 10 --ramp 10
+pilot	trades	--mode trades @TRADES@
+pilot	clean	--mode clean
+main	sprat_w5r5	--mode pgd --w_max 0.5 --warmup 5 --ramp 5
+main	sprat_w10r5	--mode pgd --w_max 0.5 --warmup 10 --ramp 5
+main	sprat_w15r5	--mode pgd --w_max 0.5 --warmup 15 --ramp 5
+main	sprat_w0r10	--mode pgd --w_max 0.5 --warmup 0 --ramp 10
+main	trades_w10r10	--mode trades @TRADES@ --warmup 10 --ramp 10
+main	cat_r10	--mode pgd --w_max 0.5 --warmup 0 --ramp 10 --ramp_what steps
+ablation	sprat_w10r10_epsonly	--mode pgd --w_max 0.5 --warmup 10 --ramp 10 --ramp_what eps
+ablation	sprat_w10r10_wonly	--mode pgd --w_max 0.5 --warmup 10 --ramp 10 --ramp_what weight
+ablation	madry_pgd	--mode pgd --w_max 1.0
+ablation	madry_w10r10	--mode pgd --w_max 1.0 --warmup 10 --ramp 10
+ablation	naive_pgd_joint	--mode pgd --w_max 0.5 --bn_mode joint
+ablation	sprat_w10r10_joint	--mode pgd --w_max 0.5 --warmup 10 --ramp 10 --bn_mode joint
+backbone2	clean_effb0	--mode clean --backbone efficientnet_b0
+backbone2	naive_pgd_effb0	--mode pgd --w_max 0.5 --backbone efficientnet_b0
+backbone2	trades_effb0	--mode trades @TRADES@ --backbone efficientnet_b0
+backbone2	sprat_w10r10_effb0	--mode pgd --w_max 0.5 --warmup 10 --ramp 10 --backbone efficientnet_b0

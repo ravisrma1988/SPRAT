@@ -1,0 +1,169 @@
+{
+  "manifest": "manifest_sprat_v2_dedup.csv",
+  "sha256": "848c8d6b96f2a7d98ca43176273a820812fb4c48935ea78cb61da558b4f5121b",
+  "rows": 13605,
+  "split_counts": {
+    "test": 1441,
+    "train": 10721,
+    "val": 1443
+  },
+  "groups": 9613,
+  "quarantine_paths_in_dgx_queue": 39,
+  "quarantine_paths_already_excluded": 39,
+  "quarantine_groups_dropped_now": 0,
+  "method": "dihedral-invariant 64-bit DCT pHash, Hamming<=6, single-linkage groups over wheat+rice; groups with >1 class label dropped; groups split 70/15/15 per class (seed 20261023); train keeps all distinct-file members of a group, val/test keep one representative per group",
+  "per_class": [
+    {
+      "class_id": 0,
+      "dataset": "wheat",
+      "class_name": "Aphid",
+      "train": 599,
+      "val": 115,
+      "test": 114
+    },
+    {
+      "class_id": 1,
+      "dataset": "wheat",
+      "class_name": "Black Rust",
+      "train": 215,
+      "val": 42,
+      "test": 43
+    },
+    {
+      "class_id": 2,
+      "dataset": "wheat",
+      "class_name": "Blast",
+      "train": 410,
+      "val": 71,
+      "test": 70
+    },
+    {
+      "class_id": 3,
+      "dataset": "wheat",
+      "class_name": "Brown Rust",
+      "train": 836,
+      "val": 170,
+      "test": 171
+    },
+    {
+      "class_id": 4,
+      "dataset": "wheat",
+      "class_name": "Common Root Rot",
+      "train": 397,
+      "val": 76,
+      "test": 75
+    },
+    {
+      "class_id": 5,
+      "dataset": "wheat",
+      "class_name": "Fusarium Head Blight",
+      "train": 443,
+      "val": 84,
+      "test": 84
+    },
+    {
+      "class_id": 6,
+      "dataset": "wheat",
+      "class_name": "Healthy",
+      "train": 725,
+      "val": 154,
+      "test": 154
+    },
+    {
+      "class_id": 7,
+      "dataset": "wheat",
+      "class_name": "Leaf Blight",
+      "train": 381,
+      "val": 71,
+      "test": 71
+    },
+    {
+      "class_id": 8,
+      "dataset": "wheat",
+      "class_name": "Mildew",
+      "train": 783,
+      "val": 117,
+      "test": 116
+    },
+    {
+      "class_id": 9,
+      "dataset": "wheat",
+      "class_name": "Mite",
+      "train": 535,
+      "val": 103,
+      "test": 103
+    },
+    {
+      "class_id": 10,
+      "dataset": "wheat",
+      "class_name": "Septoria",
+      "train": 245,
+      "val": 52,
+      "test": 52
+    },
+    {
+      "class_id": 11,
+      "dataset": "wheat",
+      "class_name": "Smut",
+      "train": 362,
+      "val": 35,
+      "test": 36
+    },
+    {
+      "class_id": 12,
+      "dataset": "wheat",
+      "class_name": "Stem fly",
+      "train": 121,
+      "val": 21,
+      "test": 21
+    },
+    {
+      "class_id": 13,
+      "dataset": "wheat",
+      "class_name": "Tan spot",
+      "train": 446,
+      "val": 80,
+      "test": 80
+    },
+    {
+      "class_id": 14,
+      "dataset": "wheat",
+      "class_name": "Yellow Rust",
+      "train": 946,
+      "val": 203,
+      "test": 202
+    },
+    {
+      "class_id": 15,
+      "dataset": "rice",
+      "class_name": "Bacterialblight",
+      "train": 852,
+      "val": 11,
+      "test": 11
+    },
+    {
+      "class_id": 16,
+      "dataset": "rice",
+      "class_name": "Blast",
+      "train": 672,
+      "val": 12,
+      "test": 12
+    },
+    {
+      "class_id": 17,
+      "dataset": "rice",
+      "class_name": "Brownspot",
+      "train": 828,
+      "val": 15,
+      "test": 15
+    },
+    {
+      "class_id": 18,
+      "dataset": "rice",
+      "class_name": "Tungro",
+      "train": 925,
+      "val": 11,
+      "test": 11
+    }
+  ]
+}

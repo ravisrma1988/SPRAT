@@ -1,0 +1,93 @@
+{
+  "torch": "2.7.0a0+7c8ec84dab.nv25.03",
+  "gpu": "NVIDIA B200 MIG 1g.45gb",
+  "batch": 32,
+  "speed": {
+    "mobilevit_s": {
+      "fp32": {
+        "img_per_s": 46.4,
+        "s_per_step": 0.6901,
+        "warmup_s": 6.7,
+        "peak_mem_gib": 10.36
+      },
+      "tf32": {
+        "img_per_s": 67.6,
+        "s_per_step": 0.4733,
+        "warmup_s": 2.8,
+        "peak_mem_gib": 10.36
+      },
+      "bf16": {
+        "img_per_s": 74.9,
+        "s_per_step": 0.4272,
+        "warmup_s": 3.0,
+        "peak_mem_gib": 6.46
+      },
+      "bf16+channels_last": {
+        "img_per_s": 90.9,
+        "s_per_step": 0.352,
+        "warmup_s": 6.9,
+        "peak_mem_gib": 6.46
+      },
+      "bf16+compile": {
+        "img_per_s": 87.8,
+        "s_per_step": 0.3646,
+        "warmup_s": 72.9,
+        "peak_mem_gib": 5.26
+      }
+    },
+    "efficientnet_b0": {
+      "fp32": {
+        "img_per_s": 77.0,
+        "s_per_step": 0.4158,
+        "warmup_s": 3.7,
+        "peak_mem_gib": 7.47
+      },
+      "tf32": {
+        "img_per_s": 103.0,
+        "s_per_step": 0.3107,
+        "warmup_s": 2.1,
+        "peak_mem_gib": 7.47
+      },
+      "bf16": {
+        "img_per_s": 103.8,
+        "s_per_step": 0.3084,
+        "warmup_s": 2.5,
+        "peak_mem_gib": 4.85
+      },
+      "bf16+channels_last": {
+        "img_per_s": 140.3,
+        "s_per_step": 0.2281,
+        "warmup_s": 7.4,
+        "peak_mem_gib": 4.85
+      },
+      "bf16+compile": {
+        "img_per_s": 193.4,
+        "s_per_step": 0.1654,
+        "warmup_s": 53.1,
+        "peak_mem_gib": 3.82
+      }
+    }
+  },
+  "parity": {
+    "mobilevit_s": {
+      "fp32": {
+        "fp32_scored_ce": 3.4926145672798157,
+        "fp32_scored_acc": 0.0
+      },
+      "bf16": {
+        "fp32_scored_ce": 3.480005145072937,
+        "fp32_scored_acc": 0.0
+      }
+    },
+    "efficientnet_b0": {
+      "fp32": {
+        "fp32_scored_ce": 23.392292022705078,
+        "fp32_scored_acc": 0.0
+      },
+      "bf16": {
+        "fp32_scored_ce": 22.946200132369995,
+        "fp32_scored_acc": 0.0
+      }
+    }
+  }
+}
