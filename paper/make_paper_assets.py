@@ -249,7 +249,9 @@ write('tables/tab_main.tex', table(
               'best\\_clean), mean $\\pm$ sample standard deviation over three seeds. All attacks at '
               '$\\varepsilon=8/255$. WC-PGD counts an image as robust only if it survives FGSM and every PGD '
               'variant, AA is standard AutoAttack, Corr. the mean accuracy over 15 corruption settings and Time '
-              'the training time per run in hours.',
+              'the training time per run in hours. TRADES is the stop-gradient study implementation of '
+              '\\eqref{eq:trades} and CAT-style the step-count curriculum without mixing of earlier strengths, '
+              'not the published methods.',
     'tab:main', 'l' + 'c' * 9,
     [r'\textbf{Condition}'] + [f'\\textbf{{{h}}}' for _, h in M] + [r'\textbf{Time}'], rows, size=r'\scriptsize',
     tabcolsep='2.2pt'))
@@ -277,7 +279,8 @@ write('tables/tab_primary.tex', table(
               'clean comparison at epoch 30, added after training as a secondary check. The 95\\% interval is the '
               'seed-level $t$ interval with two degrees of freedom, not truncated to the feasible range. A difference '
               'is marked supported only if this interval excludes zero and all three seeds agree in sign. Differences '
-              'in corruption accuracy and worst-case PGD accuracy are listed in Table~S2 of the supplementary material.',
+              'in corruption accuracy and worst-case PGD accuracy are listed in Table~S2 of the supplementary material. '
+              'TRADES and CAT-style are the study implementations of Table~\\ref{tab:main}, not the published methods.',
     'tab:primary', 'llcccc',
     [r'\textbf{Comparison}', r'\textbf{Metric}', r'\textbf{Diff}', r'\textbf{95\% CI (seeds)}',
      r'\textbf{Per seed (42/123/3407)}', r'\textbf{Supported}'], rows))
@@ -372,7 +375,8 @@ for c in EFFB0:
                  sm(c, ck, 'worst_case_pgd_8'), sm(c, ck, 'autoattack_8'), sm(c, ck, 'corrupt_mean')])
 write('tables/tab_effb0.tex', table(
     'table*', 'EfficientNet-B0 test accuracy (\\%), mean $\\pm$ sample standard deviation over three seeds, at the '
-              'primary checkpoint unless marked final. Columns as in Table~\\ref{tab:main}.', 'tab:effb0', 'lcccccc',
+              'primary checkpoint unless marked final. Columns and the TRADES study implementation as in '
+              'Table~\\ref{tab:main}.', 'tab:effb0', 'lcccccc',
     [r'\textbf{Condition}', r'\textbf{Clean}', r'\textbf{Clean (final)}', r'\textbf{PGD-50}', r'\textbf{WC-PGD}',
      r'\textbf{AA}', r'\textbf{Corr.}'], rows, size=r'\footnotesize', tabcolsep='4pt'))
 
