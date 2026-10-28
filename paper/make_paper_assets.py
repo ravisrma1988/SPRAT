@@ -257,10 +257,11 @@ for cond, ref in PRIM:
 rows.pop()
 write('tables/tab_primary.tex', table(
     'table*', 'Pre-declared primary comparisons. Diff is the mean of the per-seed accuracy differences in '
-              'percentage points (condition minus reference) at the primary checkpoint, Final the same at epoch 30. '
-              'The 95\\% interval is the seed-level $t$ interval with two degrees of freedom. A difference is marked '
-              'supported only if this interval excludes zero and all three seeds agree in sign. Differences in '
-              'corruption accuracy and worst-case PGD accuracy are listed in Table S2 of the supplementary material.',
+              'percentage points (condition minus reference) at the primary checkpoint, and rows marked final give '
+              'the same comparison at epoch 30. The 95\\% interval is the seed-level $t$ interval with two degrees of '
+              'freedom. A difference is marked supported only if this interval excludes zero and all three seeds '
+              'agree in sign. Differences in corruption accuracy and worst-case PGD accuracy are listed in Table~S2 of '
+              'the supplementary material.',
     'tab:primary', 'llcccc',
     [r'\textbf{Comparison}', r'\textbf{Metric}', r'\textbf{Diff}', r'\textbf{95\% CI (seeds)}',
      r'\textbf{Per seed (42/123/3407)}', r'\textbf{Supported}'], rows))
@@ -298,14 +299,15 @@ for c in AAC:
 write('tables/tab_aa_components.tex', table(
     'table*', 'Robust accuracy (\\%) after each AutoAttack component, applied in sequence at $\\varepsilon=8/255$, '
               'next to the worst case over the PGD family (WC-PGD). Intermediate stages are read from the AutoAttack '
-              'logs (two decimals per run), the final column equals the reported AutoAttack accuracy. The last column '
-              'counts the seeds in which the FAB-T or Square stage lowered the accuracy further.',
+              'logs (two decimals per run), the final column equals the reported AutoAttack accuracy, so differences of '
+              '0.01 between the last two stages are rounding. The last column counts the seeds in which the FAB-T or '
+              'Square stage lowered the accuracy further.',
     'tab:aa_components', 'lcccccc',
     [r'\textbf{Condition}', r'\textbf{WC-PGD}', r'\textbf{APGD-CE}', r'\textbf{+APGD-T}', r'\textbf{+FAB-T}',
      r'\textbf{+Square}', r'\textbf{Reduced}'], rows))
 
 # Checkpoint selection
-CK = ['naive_pgd', 'cat_r10', 'madry_pgd', 'sprat_w10r10', 'sprat_w10r10_epsonly', 'trades']
+CK = ['naive_pgd', 'cat_r10', 'madry_pgd', 'madry_w10r10', 'sprat_w10r10', 'sprat_w10r10_epsonly', 'trades']
 rows = []
 for c in CK:
     first = True
@@ -426,6 +428,48 @@ write('supplement/tab_per_class.tex', '\\begin{longtable}{lr' + 'cc' * len(PC) +
       'Class & $n$ & ' + ' & '.join(f'\\multicolumn{{2}}{{c}}{{{NAME[c]}}}' for c in PC) + ' \\\\\n & & '
       + ' & '.join(['Clean & AA'] * len(PC)) + ' \\\\\n\\midrule\n' + '\n'.join(' & '.join(r) + r' \\' for r in pc_rows)
       + '\n\\bottomrule\n\\end{longtable}')
+
+# Supplement: class-sensitive summary metrics for every condition (Table S7) and per-class precision (Table S8),
+# both from the per-class records of every run at its primary checkpoint
+pcr = read_csv(X / 'per_class.csv')
+by_run = {}
+for r in pcr:
+    if r['checkpoint'] == primary_ck(r['condition']):
+        by_run.setdefault((r['condition'], r['eval'], r['seed']), []).append(r)
+rows = []
+for c in MOBILEVIT + EFFB0:
+    ck = primary_ck(c)
+    cells = [NAME[c] + (' (EffB0)' if 'effb0' in c else ''), sm(c, ck, 'clean_acc'), sm(c, ck, 'clean_bal_acc'),
+             sm(c, ck, 'clean_macro_f1'), sm(c, ck, 'autoattack_8')]
+    for k in ('recall', 'f1'):  # AutoAttack balanced accuracy = mean class recall, macro-F1 = mean class F1
+        per_seed_v = [np.mean([float(x[k]) for x in v if int(x['support']) > 0])
+                      for (cc, ev, s), v in by_run.items() if cc == c and ev == 'autoattack_8']
+        cells.append(pm(per_seed_v))
+    rows.append(cells)
+write('supplement/tab_class_metrics.tex', table(
+    'table', 'Class-sensitive metrics (\\%) at the primary checkpoint, mean $\\pm$ sample standard deviation over three '
+             'seeds. Balanced accuracy is the mean per-class recall and macro-F1 the mean per-class F1 score, on clean '
+             'test images and under AutoAttack at $\\varepsilon=8/255$.',
+    'tab:class_metrics', 'lcccccc',
+    [r'\textbf{Condition}', r'\textbf{Clean acc.}', r'\textbf{Clean bal.}', r'\textbf{Clean F1}', r'\textbf{AA acc.}',
+     r'\textbf{AA bal.}', r'\textbf{AA F1}'], rows, size=r'\small', tabcolsep='4pt'))
+
+prec_rows = []
+for cls in classes:
+    cells = [cls_label(cls)]
+    for c in PC:
+        for ev in ('clean', 'autoattack_8'):
+            v = [float(x['precision']) for (cc, e, s), xs in by_run.items() if cc == c and e == ev
+                 for x in xs if x['cls'] == cls]
+            cells.append(f'{np.mean(v):.2f}' if v else 'n/a')
+    prec_rows.append(cells)
+write('supplement/tab_per_class_precision.tex', '\\begin{longtable}{l' + 'cc' * len(PC) + '}\n\\caption{Per-class '
+      'precision (\\%), mean over three seeds, on clean test images and under AutoAttack at $\\varepsilon=8/255$, '
+      'primary checkpoint. Precision is set to 0 for a class that a model never predicts.}'
+      '\\label{tab:per_class_precision}\\\\\n\\toprule\nClass & '
+      + ' & '.join(f'\\multicolumn{{2}}{{c}}{{{NAME[c]}}}' for c in PC) + ' \\\\\n & '
+      + ' & '.join(['Clean & AA'] * len(PC)) + ' \\\\\n\\midrule\n'
+      + '\n'.join(' & '.join(r) + r' \\' for r in prec_rows) + '\n\\bottomrule\n\\end{longtable}')
 
 
 # ──────────────────────────────────────────────────────────────────────────
