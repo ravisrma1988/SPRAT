@@ -230,8 +230,9 @@ write('tables/tab_conditions.tex', table(
               'ramp lengths in epochs, Full is the first epoch at full strength ($\\varepsilon=8/255$, $K=7$, target '
               'loss weight), Adv. is the number of epochs with adversarial examples. BN passes describes how clean '
               'and adversarial images pass through the network in training mode (separate batches, one joint batch, '
-              'or adversarial images only once PGD-AT reaches full strength). TRADES uses a stop-gradient clean '
-              'target. MViT-S denotes MobileViT-S and EffB0 EfficientNet-B0.',
+              'or adversarial images only once PGD-AT reaches full strength). TRADES is the study implementation with '
+              'a stop-gradient clean target and CAT-style the step-count curriculum without mixing of earlier '
+              'strengths, not the published methods. MViT-S denotes MobileViT-S and EffB0 EfficientNet-B0.',
     'tab:conditions', 'llllcclccc',
     [r'\textbf{Condition}', r'\textbf{Backbone}', r'\textbf{Objective}', r'\textbf{Weight}', '$W$', '$R$',
      r'\textbf{Ramped}', r'\textbf{BN passes}', r'\textbf{Full}', r'\textbf{Adv.}'],
@@ -322,7 +323,8 @@ write('tables/tab_aa_components.tex', table(
               'next to the worst case over the PGD family (WC-PGD). Intermediate stages are read from the AutoAttack '
               'logs (two decimals per run), the +Square column equals the reported AutoAttack accuracy, so differences of '
               '0.01 between the last two stages are rounding. The last column counts the seeds in which the FAB-T or '
-              'Square stage lowered the accuracy further.',
+              'Square stage lowered the accuracy further. TRADES-w10r10 uses the TRADES study implementation of '
+              'Table~\\ref{tab:conditions}.',
     'tab:aa_components', 'lcccccc',
     [r'\textbf{Condition}', r'\textbf{WC-PGD}', r'\textbf{APGD-CE}', r'\textbf{+APGD-T}', r'\textbf{+FAB-T}',
      r'\textbf{+Square}', r'\textbf{Reduced}'], rows))
