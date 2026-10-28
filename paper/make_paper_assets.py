@@ -39,6 +39,11 @@ MOBILEVIT = ['clean', 'naive_pgd', 'naive_pgd_joint', 'madry_pgd', 'madry_w10r10
              'sprat_w5r5', 'sprat_w10r5', 'sprat_w15r5']
 EFFB0 = ['clean_effb0', 'naive_pgd_effb0', 'trades_effb0', 'sprat_w10r10_effb0']
 COLOURS = ['black', 'tab:blue', 'tab:red', 'tab:green', 'tab:orange', 'tab:purple', 'tab:brown', 'tab:gray']
+# one colour per condition in every figure
+COL = {'naive_pgd': 'black', 'cat_r10': 'tab:blue', 'madry_pgd': 'tab:red', 'sprat_w10r10': 'tab:green',
+       'sprat_w10r10_epsonly': 'tab:orange', 'sprat_w10r10_wonly': 'tab:purple', 'sprat_w5r5': 'tab:brown',
+       'sprat_w0r10': 'tab:olive', 'sprat_w10r5': 'tab:cyan', 'sprat_w15r5': 'tab:pink'}
+METRIC = {'clean': 'Clean', 'worst_case_pgd_8': 'WC-PGD', 'autoattack_8': 'AA', 'corrupt_mean': 'Corr.'}
 
 
 def class_title(name):
@@ -92,7 +97,7 @@ def write(name, text):
 
 def table(env, caption, label, colspec, header, rows, note=None, size=r'\footnotesize', tabcolsep='3pt'):
     body = '\n'.join(' & '.join(r) + r' \\' if isinstance(r, (list, tuple)) else r for r in rows)
-    notes = f'\n\\vspace{{2pt}}\n\\parbox{{\\linewidth}}{{\\scriptsize {note}}}' if note else ''
+    notes = f'\n\\vspace{{4pt}}\n\\parbox{{\\linewidth}}{{\\scriptsize {note}}}' if note else ''
     return (f'\\begin{{{env}}}[!t]\n\\centering\n\\caption{{{caption}}}\n\\label{{{label}}}\n{size}\n'
             f'\\setlength{{\\tabcolsep}}{{{tabcolsep}}}\n\\begin{{tabular}}{{{colspec}}}\n\\toprule\n'
             f'{" & ".join(header)} \\\\\n\\midrule\n{body}\n\\bottomrule\n\\end{{tabular}}{notes}\n\\end{{{env}}}')
@@ -141,7 +146,17 @@ def seed_ci(r):
 
 
 def signs(r):
-    return '$' + '/'.join(t.split(':')[1] for t in r['per_seed_diff'].split()) + '$'
+    """Per-seed differences as '$+1.00/{-2.00}/{+3.00}$'; braces keep each sign unary."""
+    return '$' + '/'.join('{' + t.split(':')[1] + '}' for t in r['per_seed_diff'].split()) + '$'
+
+
+def longtable(colspec, caption, label, header, rows):
+    """A longtable whose column header repeats on every continuation page."""
+    n = len(colspec.replace('|', ''))
+    return (f'\\begin{{longtable}}{{{colspec}}}\n\\caption{{{caption}}}\\label{{{label}}}\\\\\n\\toprule\n{header}'
+            f'\\\\\n\\midrule\n\\endfirsthead\n\\multicolumn{{{n}}}{{l}}{{\\footnotesize \\tablename~\\thetable{{}} '
+            f'(continued)}}\\\\\n\\toprule\n{header}\\\\\n\\midrule\n\\endhead\n\\bottomrule\n\\endfoot\n'
+            + '\n'.join(' & '.join(r) + r' \\' for r in rows) + '\n\\end{longtable}')
 
 
 def supported(r):
@@ -154,16 +169,17 @@ def supported(r):
 # ──────────────────────────────────────────────────────────────────────────
 # Audit of the original splits (facts from the pre-revision audit, REVISION_FINDINGS.md sections 1, 2 and 5)
 write('tables/tab_audit.tex', table(
-    'table', 'Audit of the original data splits used in the first submission.', 'tab:audit', 'p{5.3cm}r',
+    'table', 'Audit of the original data splits used in the first submission.', 'tab:audit',
+    r'>{\raggedright\arraybackslash}p{5.3cm}r',
     [r'\textbf{Finding}', r'\textbf{Count}'],
     [['Wheat test images with a byte-identical file in training', '495/750 (66\\%)'],
      ['Wheat test images with an identical, rotated or flipped copy in training', '654/750 (87\\%)'],
      ['Wheat validation images with such a copy in training', '262/300 (87\\%)'],
      ['Groups of identical files carrying different class labels', '256'],
      ['Distinct rice photographs behind the 5,932 rice images', '329'],
-     ['Median number of rotated or flipped variants per rice photograph', '16'],
-     ['Rice images of exactly $300 \\times 300$ pixels', '4,624/5,932'],
-     ['Rice images filed inside wheat class folders', '40']],
+     ['Median number of images (rotated or flipped variants) per rice photograph', '16'],
+     ['Rice images of exactly $300 \\times 300$ pixels', '4,624/5,932 (78\\%)'],
+     ['Rice images with a copy in a wheat class folder (2 files)', '40']],
     note='Copies were identified with a rotation- and flip-invariant perceptual hash (Hamming distance at most 6) '
          'and confirmed by visual inspection.'))
 
@@ -257,11 +273,11 @@ for cond, ref in PRIM:
 rows.pop()
 write('tables/tab_primary.tex', table(
     'table*', 'Pre-declared primary comparisons. Diff is the mean of the per-seed accuracy differences in '
-              'percentage points (condition minus reference) at the primary checkpoint, and rows marked final give '
-              'the same comparison at epoch 30. The 95\\% interval is the seed-level $t$ interval with two degrees of '
-              'freedom. A difference is marked supported only if this interval excludes zero and all three seeds '
-              'agree in sign. Differences in corruption accuracy and worst-case PGD accuracy are listed in Table~S2 of '
-              'the supplementary material.',
+              'percentage points (condition minus reference) at the primary checkpoint. Rows marked final give the '
+              'clean comparison at epoch 30, added after training as a secondary check. The 95\\% interval is the '
+              'seed-level $t$ interval with two degrees of freedom, not truncated to the feasible range. A difference '
+              'is marked supported only if this interval excludes zero and all three seeds agree in sign. Differences '
+              'in corruption accuracy and worst-case PGD accuracy are listed in Table~S2 of the supplementary material.',
     'tab:primary', 'llcccc',
     [r'\textbf{Comparison}', r'\textbf{Metric}', r'\textbf{Diff}', r'\textbf{95\% CI (seeds)}',
      r'\textbf{Per seed (42/123/3407)}', r'\textbf{Supported}'], rows))
@@ -279,8 +295,10 @@ for cond, ref in ABL:
         cells.append(f'${d:+.2f}$ [${lo:.2f}$, ${hi:.2f}$]')
     rows.append(cells)
 write('tables/tab_ablation.tex', table(
-    'table*', 'Exploratory schedule ablations at the primary checkpoint. Difference (condition minus reference) in '
-             'AutoAttack (AA) and clean accuracy in percentage points, with the seed-level 95\\% interval in brackets.',
+    'table*', 'Exploratory schedule and BatchNorm-pass ablations at the primary checkpoint. Difference (condition '
+             'minus reference) in AutoAttack (AA) and clean accuracy in percentage points, with the seed-level 95\\% '
+             'interval in brackets. Differences are computed from unrounded per-seed accuracies and can differ by 0.01 '
+             'from differences of the rounded means in Table~\\ref{tab:main}.',
     'tab:ablation', 'llcc',
     [r'\textbf{Condition}', r'\textbf{Reference}', r'\textbf{AA diff [95\% CI]}', r'\textbf{Clean diff [95\% CI]}'],
     rows, size=r'\footnotesize', tabcolsep='6pt'))
@@ -299,7 +317,7 @@ for c in AAC:
 write('tables/tab_aa_components.tex', table(
     'table*', 'Robust accuracy (\\%) after each AutoAttack component, applied in sequence at $\\varepsilon=8/255$, '
               'next to the worst case over the PGD family (WC-PGD). Intermediate stages are read from the AutoAttack '
-              'logs (two decimals per run), the final column equals the reported AutoAttack accuracy, so differences of '
+              'logs (two decimals per run), the +Square column equals the reported AutoAttack accuracy, so differences of '
               '0.01 between the last two stages are rounding. The last column counts the seeds in which the FAB-T or '
               'Square stage lowered the accuracy further.',
     'tab:aa_components', 'lcccccc',
@@ -382,8 +400,8 @@ rows = [[c['name'].replace('trades_tune_', '').replace('_', '\\_'), c['args'].re
     ' --trades_detach 1', '$, stop-gradient') + ('$' if 'detach' not in c['args'] else ''), str(c['best_robust_epoch']),
          f"{c['val_pgd10'] * 100:.2f}", f"{c['val_clean'] * 100:.2f}"] for c in trades_sel['candidates']]
 write('supplement/tab_trades_tuning.tex', table(
-    'table', 'TRADES selection on the validation split (seed 42). Rule: highest validation PGD-10 accuracy at the '
-             'best\\_robust checkpoint, ties broken by clean accuracy, candidates below 2\\% rejected.',
+    'table', 'TRADES selection on the validation split (seed 42), by the highest validation PGD-10 accuracy at the '
+             'best\\_robust checkpoint, with ties broken by clean accuracy and candidates below 2\\% rejected.',
     'tab:trades_tuning', 'llccc', [r'\textbf{Run}', r'\textbf{Setting}', r'\textbf{Epoch}', r'\textbf{Val PGD-10}',
                                    r'\textbf{Val clean}'], rows))
 
@@ -395,22 +413,30 @@ for c in MOBILEVIT + EFFB0:
         cells = [NAME[c] + (' (EffB0)' if 'effb0' in c else ''), ck.replace('_', '\\_')]
         for m in ('clean_acc', 'pgd50_ce_8', 'worst_case_pgd_8', 'autoattack_8'):
             v = metric(c, ck, m)
-            cells.append(' / '.join(f'{v[s]:.2f}' for s in sorted(v)) if v else '--')
+            cells.append(' / '.join(f'{v[s]:.2f}' for s in sorted(v)) if v else 'n/a')
         ps_rows.append(cells)
-write('supplement/tab_per_seed.tex', '\\begin{longtable}{llcccc}\n\\caption{Per-seed test accuracy (\\%), seeds '
-      '42 / 123 / 3407.}\\label{tab:per_seed}\\\\\n\\toprule\nCondition & Checkpoint & Clean & PGD-50 & WC-PGD & AA '
-      '\\\\\n\\midrule\n' + '\n'.join(' & '.join(r) + r' \\' for r in ps_rows) + '\n\\bottomrule\n\\end{longtable}')
+write('supplement/tab_per_seed.tex', longtable(
+    'llcccc', 'Per-seed test accuracy (\\%), seeds 42 / 123 / 3407, all attacks at $\\varepsilon=8/255$. The primary '
+              'checkpoint is best\\_robust for adversarial training and best\\_clean for clean training. AutoAttack '
+              'was run only at the primary checkpoint (n/a elsewhere).', 'tab:per_seed',
+    'Condition & Checkpoint & Clean & PGD-50 & WC-PGD & AA', ps_rows))
 
+EB = lambda c: NAME[c] + (' (EffB0)' if 'effb0' in c else '')
 pr_rows = []
 for r in paired:
+    if r['metric'] == 'worst_case_all_8':  # equals the AutoAttack row in every pair (Section V-E)
+        continue
     d, lo, hi = seed_ci(r)
-    pr_rows.append([NAME[r['condition']] + (' (EffB0)' if 'effb0' in r['condition'] else ''), NAME[r['reference']],
-                    'yes' if r['primary'] == 'True' else 'no', r['metric'].replace('_', '\\_'), f'${d:+.2f}$',
-                    f'[${lo:.2f}$, ${hi:.2f}$]', f"[{r['ci95_two_level_low']}, {r['ci95_two_level_high']}]", signs(r)])
-write('supplement/tab_paired_all.tex', '\\begin{longtable}{lllllccl}\n\\caption{All paired comparisons at the '
-      'primary checkpoint: seed-level $t$ interval and two-level bootstrap range.}\\label{tab:paired_all}\\\\\n'
-      '\\toprule\nCondition & Reference & Primary & Metric & Diff & Seed CI & Bootstrap & Per seed \\\\\n\\midrule\n'
-      + '\n'.join(' & '.join(r) + r' \\' for r in pr_rows) + '\n\\bottomrule\n\\end{longtable}')
+    pr_rows.append([EB(r['condition']), EB(r['reference']), 'yes' if r['primary'] == 'True' else 'no',
+                    METRIC[r['metric']], f'${d:+.2f}$', f'[${lo:.2f}$, ${hi:.2f}$]',
+                    f"[${float(r['ci95_two_level_low']):.2f}$, ${float(r['ci95_two_level_high']):.2f}$]", signs(r)])
+write('supplement/tab_paired_all.tex', longtable(
+    'lllllccl', 'All paired comparisons at the primary checkpoint, with the difference in percentage points (condition minus '
+                'reference), seed-level $t$ interval and two-level bootstrap range. Primary marks the pre-declared '
+                'comparisons of Table~5 in the main article. Metrics are clean accuracy (Clean), worst-case PGD '
+                'accuracy (WC-PGD), AutoAttack accuracy (AA) and mean corruption accuracy (Corr.). EffB0 denotes '
+                'EfficientNet-B0.', 'tab:paired_all',
+    'Condition & Reference & Primary & Metric & Diff & Seed CI & Bootstrap & Per seed', pr_rows))
 
 PC = ['clean', 'sprat_w10r10', 'sprat_w10r10_epsonly', 'madry_pgd']
 classes = [r['cls'] for r in perclass if r['condition'] == 'clean' and r['eval'] == 'clean']
@@ -423,11 +449,14 @@ for cls in classes:
             hit = [r for r in perclass if r['condition'] == c and r['eval'] == ev and r['cls'] == cls]
             cells.append(hit[0]['recall'].split(' ')[0] if hit else '--')
     pc_rows.append(cells)
-write('supplement/tab_per_class.tex', '\\begin{longtable}{lr' + 'cc' * len(PC) + '}\n\\caption{Per-class recall '
-      '(\\%), mean over three seeds, clean and AutoAttack, primary checkpoint.}\\label{tab:per_class}\\\\\n\\toprule\n'
-      'Class & $n$ & ' + ' & '.join(f'\\multicolumn{{2}}{{c}}{{{NAME[c]}}}' for c in PC) + ' \\\\\n & & '
-      + ' & '.join(['Clean & AA'] * len(PC)) + ' \\\\\n\\midrule\n' + '\n'.join(' & '.join(r) + r' \\' for r in pc_rows)
-      + '\n\\bottomrule\n\\end{longtable}')
+PC_GROUPS = ' & '.join(f'\\multicolumn{{2}}{{c}}{{{NAME[c]}}}' for c in PC)
+PC_EVALS = ' & '.join(['Clean & AA'] * len(PC))
+write('supplement/tab_per_class.tex', longtable(
+    'lr' + 'cc' * len(PC), 'Per-class recall (\\%) of MobileViT-S, mean over three seeds, primary checkpoint. Column '
+                           'groups are training conditions, and their sub-columns give recall on clean test images '
+                           'and under AutoAttack (AA) at $\\varepsilon=8/255$. $n$ is the number of test images of '
+                           'the class.', 'tab:per_class',
+    f'Class & $n$ & {PC_GROUPS} \\\\\n & & {PC_EVALS}', pc_rows))
 
 # Supplement: class-sensitive summary metrics for every condition (Table S7) and per-class precision (Table S8),
 # both from the per-class records of every run at its primary checkpoint
@@ -463,13 +492,12 @@ for cls in classes:
                  for x in xs if x['cls'] == cls]
             cells.append(f'{np.mean(v):.2f}' if v else 'n/a')
     prec_rows.append(cells)
-write('supplement/tab_per_class_precision.tex', '\\begin{longtable}{l' + 'cc' * len(PC) + '}\n\\caption{Per-class '
-      'precision (\\%), mean over three seeds, on clean test images and under AutoAttack at $\\varepsilon=8/255$, '
-      'primary checkpoint. Precision is set to 0 for a class that a model never predicts.}'
-      '\\label{tab:per_class_precision}\\\\\n\\toprule\nClass & '
-      + ' & '.join(f'\\multicolumn{{2}}{{c}}{{{NAME[c]}}}' for c in PC) + ' \\\\\n & '
-      + ' & '.join(['Clean & AA'] * len(PC)) + ' \\\\\n\\midrule\n'
-      + '\n'.join(' & '.join(r) + r' \\' for r in prec_rows) + '\n\\bottomrule\n\\end{longtable}')
+write('supplement/tab_per_class_precision.tex', longtable(
+    'l' + 'cc' * len(PC), 'Per-class precision (\\%) of MobileViT-S, mean over three seeds, primary checkpoint. Column '
+                          'groups are training conditions, and their sub-columns give precision on clean test images '
+                          'and under AutoAttack (AA) at $\\varepsilon=8/255$. Precision is set to 0 for a class that a '
+                          'model never predicts.', 'tab:per_class_precision',
+    f'Class & {PC_GROUPS} \\\\\n & {PC_EVALS}', prec_rows))
 
 
 # ──────────────────────────────────────────────────────────────────────────
@@ -598,9 +626,9 @@ fig, ax = plt.subplots(figsize=(7.16, 1.9))
 ax.set_xlim(-0.5, 100.5); ax.set_ylim(0, 23); ax.axis('off')
 BW, BH, STEP = 17.3, 8.5, 20.25  # box width / height and spacing in axis units
 top = ['Public collections\nwheat 14,154 images\nrice 5,932 images',
-       'Near-duplicate audit\ndihedral-invariant pHash\nHamming distance $\\leq$ 6',
+       'Near-duplicate audit\npHash, rotations and flips\nHamming distance $\\leq$ 6',
        'Group-aware split\n10,721 / 1,443 / 1,441\nreleased manifest',
-       '20 conditions, 3 seeds\n30 epochs, MobileViT-S\nand EfficientNet-B0',
+       '16 + 4 conditions\nMobileViT-S and\nEfficientNet-B0\n3 seeds, 30 epochs',
        'Checkpoints\nbest_robust (primary)\nfinal, best_clean']
 bottom = ['Test evaluation\nFGSM, PGD, CW loss\nAutoAttack, corruptions',
           'Diagnostics\nAutoAttack components\nBN recalibration, cost',
@@ -623,22 +651,28 @@ save(fig, 'fig_workflow')
 # Schedules (computed by the training code's own schedule())
 E = np.arange(1, 31)
 fig, axes = plt.subplots(1, 3, figsize=(7.16, 2.2))
-for (w, r), col in zip([(0, 10), (5, 5), (10, 5), (10, 10), (15, 5)], COLOURS):
-    axes[0].step(E, [schedule(e, w, r, 8 / 255, 0.5)[0] * 255 for e in E], where='mid', color=col, label=f'w{w}r{r}')
-axes[0].step(E, [8] * 30, where='mid', color='tab:gray', ls=':', label='Naive PGD')
+LEG = dict(fontsize=6.3, loc='lower right', borderaxespad=0.3, frameon=True, facecolor='white', edgecolor='none',
+           framealpha=1, borderpad=0.2)
+for w, r in [(0, 10), (5, 5), (10, 5), (10, 10), (15, 5)]:
+    c = 'sprat_w10r10' if (w, r) == (10, 10) else f'sprat_w{w}r{r}'
+    axes[0].step(E, [schedule(e, w, r, 8 / 255, 0.5)[0] * 255 for e in E], where='mid', color=COL[c],
+                 label=f'w{w}r{r}')
+axes[0].step(E, [8] * 30, where='mid', color=COL['naive_pgd'], ls=':', label='Naive PGD')
 axes[0].set_ylabel(r'$\varepsilon_e \times 255$')
-axes[0].legend(fontsize=5.5, loc='lower right', handlelength=1.2, labelspacing=0.25, borderaxespad=0.3)
+axes[0].legend(handlelength=1.2, labelspacing=0.2, **LEG)
 # (b) is the same for SPRAT, SPRAT-eps and SPRAT-lambda up to which quantity ramps; the caption names them
 axes[1].step(E, [schedule(e, 10, 10, 8 / 255, 0.5, 'eps')[0] / (8 / 255) for e in E], where='mid', color='black',
              label='ramped')
 axes[1].step(E, [schedule(e, 10, 10, 8 / 255, 0.5, 'eps')[1] / 0.5 for e in E], where='mid', color='tab:red', ls='--',
              label='held at target')
 axes[1].set_ylabel('Fraction of target value')
-axes[1].legend(fontsize=5.5, loc='lower right', handlelength=1.6, borderaxespad=0.3)
-axes[2].step(E, [schedule(e, 0, 10, 8 / 255, 0.5, 'steps')[2] for e in E], where='mid', color='black', label='CAT-style')
-axes[2].step(E, [schedule(e, 10, 10, 8 / 255, 0.5)[2] for e in E], where='mid', color='tab:blue', ls='--', label='SPRAT')
+axes[1].legend(handlelength=1.6, **LEG)
+axes[2].step(E, [schedule(e, 0, 10, 8 / 255, 0.5, 'steps')[2] for e in E], where='mid', color=COL['cat_r10'],
+             label='CAT-style')
+axes[2].step(E, [schedule(e, 10, 10, 8 / 255, 0.5)[2] for e in E], where='mid', color=COL['sprat_w10r10'], ls='--',
+             label='SPRAT')
 axes[2].set_ylabel('PGD steps $K_e$')
-axes[2].legend(fontsize=5.5, loc='lower right', handlelength=1.6, borderaxespad=0.3)
+axes[2].legend(handlelength=1.6, **LEG)
 for a, t in zip(axes, ('(a)', '(b)', '(c)')):
     a.set_xlabel('Epoch'); a.grid(alpha=0.3, lw=0.4); a.set_title(t, fontsize=8)
 save(fig, 'fig_schedules')
@@ -663,19 +697,23 @@ for ax, conds, title in ((axes[0], MOBILEVIT, '(a) MobileViT-S'), (axes[1], EFFB
     for c in conds:
         ck = primary_ck(c)
         (mx, sx), (my, sy) = mean_sd(metric(c, ck, 'clean_acc').values()), mean_sd(metric(c, ck, 'autoattack_8').values())
-        col = 'tab:blue' if c.startswith('sprat') else 'tab:red' if c.startswith('madry') else 'black'
-        ax.errorbar(mx, my, xerr=sx, yerr=sy, fmt='o', ms=3.2, color=col, elinewidth=0.6, capsize=1.5, zorder=3)
+        col = (COL['sprat_w10r10'] if c.startswith('sprat') else COL['madry_pgd'] if c.startswith('madry')
+               else COL['cat_r10'] if c == 'cat_r10' else 'black')
+        # standard-deviation bars clipped to the feasible range 0 to 100 %
+        xerr = [[min(sx, mx)], [min(sx, 100 - mx)]]
+        yerr = [[min(sy, my)], [min(sy, 100 - my)]]
+        ax.errorbar(mx, my, xerr=xerr, yerr=yerr, fmt='o', ms=3.2, color=col, elinewidth=0.6, capsize=1.5, zorder=3)
         pts.append((mx, my))
         lx, ly, ha, lead = LAB[c]
         ax.annotate(PLAIN[c], (mx, my), xytext=(lx, ly), textcoords='data', ha=ha, va='top' if lead else 'center',
-                    fontsize=5.8, arrowprops=dict(arrowstyle='-', lw=0.4, color='gray', shrinkA=0, shrinkB=2)
+                    fontsize=6.2, arrowprops=dict(arrowstyle='-', lw=0.4, color='gray', shrinkA=0, shrinkB=2)
                     if lead else None)
     if ax is axes[0]:
         front = sorted(p for p in pts if not any(q[0] >= p[0] and q[1] >= p[1] and q != p for q in pts))
         ax.plot(*zip(*front), color='gray', ls='--', lw=0.7, zorder=1)
     ax.set_title(title, fontsize=8); ax.set_xlabel('Clean accuracy (%)'); ax.grid(alpha=0.3, lw=0.4)
     ax.axhline(0, color='black', lw=0.4, zorder=0)
-axes[0].set_xlim(0, 99); axes[1].set_xlim(-5, 96)
+axes[0].set_xlim(0, 99); axes[1].set_xlim(0, 99)
 axes[0].set_ylim(-12, 36); axes[0].set_yticks(range(0, 36, 5))
 axes[0].set_ylabel('AutoAttack accuracy (%), ε = 8/255')
 save(fig, 'fig_pareto')
@@ -683,7 +721,8 @@ save(fig, 'fig_pareto')
 # Validation curves
 SHOW = ['naive_pgd', 'cat_r10', 'madry_pgd', 'sprat_w10r10', 'sprat_w10r10_epsonly', 'sprat_w10r10_wonly', 'sprat_w5r5']
 fig, axes = plt.subplots(1, 3, figsize=(7.16, 2.5))
-for c, col in zip(SHOW, COLOURS):
+for c in SHOW:
+    col = COL[c]
     for ax, key, sc in zip(axes, ('val_clean_acc', 'val_pgd_acc', 'grad_norm_mean'), (100, 100, 1)):
         by_seed = {}
         for h in hist:
@@ -696,31 +735,36 @@ for ax, (t, yl) in zip(axes, (('(a) Validation clean accuracy', 'Accuracy (%)'),
                               ('(b) Validation PGD-10 accuracy', 'Accuracy (%)'),
                               ('(c) Gradient norm before clipping', 'Norm'))):
     ax.set_title(t, fontsize=7.5); ax.set_xlabel('Epoch'); ax.set_ylabel(yl); ax.grid(alpha=0.3, lw=0.4)
-fig.legend(*axes[0].get_legend_handles_labels(), loc='lower center', ncol=len(SHOW), fontsize=6, handlelength=1.6)
+fig.legend(*axes[0].get_legend_handles_labels(), loc='lower center', ncol=len(SHOW), fontsize=7, handlelength=1.6)
 fig.tight_layout(rect=(0, 0.09, 1, 1))
 save(fig, 'fig_curves', tight=False)
 
 # Per-class AutoAttack recall
 fig, ax = plt.subplots(figsize=(3.5, 4.4))
 y = np.arange(len(classes))
-for i, (c, col) in enumerate(zip(['sprat_w10r10', 'sprat_w10r10_epsonly', 'madry_pgd'], ['tab:blue', 'tab:green', 'tab:red'])):
+for i, c in enumerate(['sprat_w10r10', 'sprat_w10r10_epsonly', 'madry_pgd']):
     v = [float(next(r['recall'] for r in perclass if r['condition'] == c and r['eval'] == 'autoattack_8'
                     and r['cls'] == cls).split(' ')[0]) for cls in classes]
-    ax.barh(y + (i - 1) * 0.27, v, height=0.27, color=col, label=PLAIN[c])
-ax.set_yticks(y); ax.set_yticklabels([cls_label(cls) for cls in classes], fontsize=6)
+    ax.barh(y + (i - 1) * 0.27, v, height=0.27, color=COL[c], label=PLAIN[c])
+ax.set_yticks(y); ax.set_yticklabels([cls_label(cls) for cls in classes], fontsize=7)
+ax.tick_params(axis='x', labelsize=7)
 ax.invert_yaxis(); ax.set_xlim(0, 100)
-ax.set_xlabel('AutoAttack recall (%), ε = 8/255'); ax.grid(axis='x', alpha=0.3, lw=0.4)
-ax.legend(fontsize=6, loc='upper center', bbox_to_anchor=(0.5, -0.12), ncol=3, handlelength=1.2)
+ax.set_xlabel('AutoAttack recall (%), ε = 8/255', fontsize=7); ax.grid(axis='x', alpha=0.3, lw=0.4)
+ax.legend(fontsize=7, loc='upper center', bbox_to_anchor=(0.5, -0.12), ncol=3, handlelength=1.2)
 save(fig, 'fig_perclass', sub='supplement/figures')  # supplementary Fig. S3
 
 # Supplement: training loss terms (PGD-AT logs no clean term because it is at full strength from epoch 1)
 fig, axes = plt.subplots(1, 2, figsize=(7.16, 2.7))
-for c, col in zip(SHOW, COLOURS):
+for c in SHOW:
+    col = COL[c]
     for ax, key in zip(axes, ('train_clean_ce', 'train_adv_term')):
         by_seed = {}
         for h in hist:
             if h['condition'] == c:
-                by_seed.setdefault(h['seed'], []).append(float(h[key]) if h[key] not in ('', 'None') else np.nan)
+                v = float(h[key]) if h[key] not in ('', 'None') else np.nan
+                if key == 'train_adv_term' and v == 0.0:  # no attack is run in clean warm-up epochs (eps_e = 0)
+                    v = np.nan
+                by_seed.setdefault(h['seed'], []).append(v)
         Mx = np.array(list(by_seed.values()))
         if np.all(np.isnan(Mx)):
             continue
@@ -728,7 +772,7 @@ for c, col in zip(SHOW, COLOURS):
         ax.fill_between(E, np.nanmin(Mx, 0), np.nanmax(Mx, 0), color=col, alpha=0.12, lw=0)
 for ax, t in zip(axes, ('(a) Clean cross-entropy term', '(b) Adversarial term')):
     ax.set_title(t, fontsize=7.5); ax.set_xlabel('Epoch'); ax.set_ylabel('Loss'); ax.grid(alpha=0.3, lw=0.4)
-fig.legend(*axes[1].get_legend_handles_labels(), loc='lower center', ncol=len(SHOW), fontsize=6, handlelength=1.6)
+fig.legend(*axes[1].get_legend_handles_labels(), loc='lower center', ncol=len(SHOW), fontsize=7, handlelength=1.6)
 fig.tight_layout(rect=(0, 0.09, 1, 1))
 save(fig, 'fig_loss', sub='supplement/figures', tight=False)
 
@@ -743,8 +787,8 @@ for ax, (c, ev, title) in zip(axes.flat, PANELS):
     im = ax.imshow(cm, cmap='Blues', vmin=0, vmax=100)
     lab = [cls_label(n).replace(' (rice)', ' (R)') for n in conf[c][ev]['classes']]
     ax.set_xticks(range(len(lab))); ax.set_yticks(range(len(lab)))
-    ax.set_xticklabels(lab if ax in axes[1] else [], rotation=90, fontsize=5.5)
-    ax.set_yticklabels(lab if ax in axes[:, 0] else [], fontsize=5.5)
+    ax.set_xticklabels(lab if ax in axes[1] else [], rotation=90, fontsize=6)
+    ax.set_yticklabels(lab if ax in axes[:, 0] else [], fontsize=6)
     ax.tick_params(length=2)
     ax.set_title(title, fontsize=7.5)
 for ax in axes[1]:

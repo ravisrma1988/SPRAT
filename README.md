@@ -24,7 +24,7 @@ git clone https://github.com/ravisrma1988/SPRAT.git
 ## Data
 
 - Wheat: "Wheat Plant Diseases" collection on Kaggle (owner `kushagra3204`).
-- Rice: "Rice Leaf Disease Images", Mendeley Data, DOI 10.17632/fwcj7stb8r.1.
+- Rice: "Rice Leaf Disease Image Samples", Mendeley Data, DOI 10.17632/fwcj7stb8r.1.
 
 Place the extracted collections so that the manifest paths resolve relative to the project root:
 `data/dataset/wheat/data/{train,valid,test}/<class>/...` and `data/dataset/rice/Rice Leaf Disease Images/<class>/...`.
