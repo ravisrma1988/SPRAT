@@ -14,7 +14,7 @@ git clone https://github.com/ravisrma1988/SPRAT.git
 
 | Folder | What it holds |
 |---|---|
-| `code/` | Training, evaluation, aggregation and run-queue scripts, byte-identical to the versions that produced the reported results (SHA-256 below and in `SHA256SUMS`) |
+| `code/` | Training, evaluation, aggregation and run-queue scripts, byte-identical to the versions that produced the reported results (SHA-256 of every file in `SHA256SUMS`) |
 | `data_pipeline/` | Near-duplicate audit and the group-aware deduplicated split that produced the manifest |
 | `manifest/` | `manifest_sprat_v2_dedup.csv` (13,605 images: path, class, split, duplicate group, MD5) and its card (counts, method, SHA-256) |
 | `results/` | Aggregated outputs of all 60 runs: mean and per-seed tables, paired statistics, AutoAttack component breakdown, BatchNorm recalibration diagnostic, per-class metrics, confusion matrices, training histories, efficiency and training-cost measurements |
@@ -88,8 +88,15 @@ deterministic, so a rerun reproduces the results statistically rather than to th
 
 ## File checksums (scripts used for the reported runs)
 
-See `SHA256SUMS`. The run configurations under `results/` record `script_sha256`, `common_sha256` and
-`eval_script_sha256`, which match `code/train_sprat_v2.py`, `code/sprat_common.py` and `code/eval_sprat_v2.py`.
+`SHA256SUMS` lists the SHA-256 of every file in this repository (check with `sha256sum -c SHA256SUMS`). The run
+records under `results/runs/` store `script_sha256`, `common_sha256` and `eval_script_sha256`, which equal the
+checksums of `code/train_sprat_v2.py`, `code/sprat_common.py` and `code/eval_sprat_v2.py`:
+
+| File | SHA-256 |
+|---|---|
+| `code/train_sprat_v2.py` | `ede0379f5a815f26d25f6c288ee366c0358e7fde43eba092dce1190d9ba98e59` |
+| `code/sprat_common.py` | `212866a2cce9b2f388d7ee709b9ed0eb36d45556e7c0cf30411f150bea759b90` |
+| `code/eval_sprat_v2.py` | `b14555425cd3eaaba5a60efa9e4295c76694ef0fcf92a2fdbb5248fcfb47ef56` |
 
 ## Citation
 
@@ -97,4 +104,4 @@ If you use this code or the split, please cite the article (citation to be added
 
 ## License
 
-To be added by the authors before the repository is made public.
+A licence file will be added by the authors.
