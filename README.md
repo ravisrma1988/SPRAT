@@ -1,6 +1,7 @@
-# SPRAT: Scheduled Progressive Adversarial Training for Lightweight Vision Transformers in Plant Disease Recognition
+# SPRAT: Empirical analysis of scheduled progressive adversarial training for lightweight plant disease classifiers on deduplicated wheat and rice images
 
-Code, split manifest and per-seed results for the revised IEEE Access submission (manuscript Access-2026-45041).
+Code, split manifest and per-seed results for the article "Empirical analysis of scheduled progressive adversarial
+training for lightweight plant disease classifiers on deduplicated wheat and rice images", submitted to Scientific Reports.
 Everything needed to reproduce the reported numbers is here, except the two public image collections, which must be
 downloaded from their original sources (see Data).
 
