@@ -105,4 +105,6 @@ If you use this code or the split, please cite the article (citation to be added
 
 ## License
 
-A licence file will be added by the authors.
+The code is released under the MIT License (see `LICENSE`). The licence covers the code, the manifest and the
+result records in this repository. The wheat and rice images are not included and remain subject to the terms of
+their original collections.
